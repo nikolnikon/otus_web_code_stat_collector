@@ -13,7 +13,7 @@ def main():
         parser = ArgumentParser('Подсчет самых популярных существительных в заголовках статей с сайта habr.com')
         parser.add_argument('-p', '--pos', nargs='?', default='verb', type=str, choices=['noun', 'verb'],
                             help='Анализируемые части речи. noun - существительные; verb - глаголы')
-        parser.add_argument('-с', '--code_element', nargs='?', default='method', type=str, choices=['var', 'func'],
+        parser.add_argument('-с', '--code_element', nargs='?', default='method', type=str, choices=['loc_var', 'func'],
                             help='Анализируемые части кода. var - локальных переменных внутри функций;'
                                  'func - названия функций')
         parser.add_argument('-o', '--output', nargs='?', default='stdout', type=str, choices=['stdout', 'file'],

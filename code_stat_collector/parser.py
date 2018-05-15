@@ -1,9 +1,10 @@
 import os
 import ast
-import itertools
+from abc import ABCMeta, abstractmethod
+from code_stat_collector.utils import flat, split_words_by_underscore, get_files_names
 
 
-class AbstractParser:
+class AbstractParser(metaclass=ABCMeta):
     def __init__(self, url):
         self._url = url
 
@@ -15,15 +16,17 @@ class AbstractParser:
     def url(self, value):
         self._url = value
 
+    @abstractmethod
     def get_words(self, code_element):
-        pass
+        raise NotImplementedError('Не определен метод AbstractParser.get_words')
+
+    @abstractmethod
+    def _parse(self):
+        raise NotImplementedError('Не определен метод AbstractParser._parse')
 
     def _fetch_source_code(self):
         path = str()
         return path
-
-    def _parse(self):
-        pass
 
 
 class PythonParser(AbstractParser):
@@ -33,12 +36,7 @@ class PythonParser(AbstractParser):
 
     def get_words(self, code_element):
         self._parse()
-        # todo Посмотреть, как делается связывание методов класса
-        # funcs = dict(
-        #     func=
-        #
-        # )
-        words = []
+        return self._get_words_from_elements_names(code_element)
 
     def _parse(self):
         if self._trees:
@@ -54,33 +52,26 @@ class PythonParser(AbstractParser):
         """
         py_filenames = []
         for dirname, dirs, files in os.walk(path, topdown=True):
-            py_filenames += self._get_py_files_names(dirname, files)
+            py_filenames += get_files_names(dirname, files, 'py')
 
         for filename in py_filenames:
             with open(filename, 'r', encoding='utf-8') as attempt_handler:
                 main_file_content = attempt_handler.read()
                 try:
                     tree = ast.parse(main_file_content)
+                    self._trees.append(tree)
                 except SyntaxError as e:
-                    tree = None
+                    pass
 
-            self._trees.append(tree)
-
-    def _get_py_files_names(self, dirname, files):
-        py_filenames = []
-        for file in files:
-            if file.endswith('.py'):
-                py_filenames.append(os.path.join(dirname, file))
-
-    def _get_words_from_funtions_names(self):
-        funcs = self._flat([self._get_all_functions_names(t) for t in self._trees])
-        words = self._flat([self._get_words_from_function_name(function_name) for function_name in funcs])
+    def _get_words_from_elements_names(self, code_element):
+        names = []
+        if code_element == 'func':
+            names = flat([self._get_all_functions_names(t) for t in self._trees])
+        elif code_element == 'loc_var':
+            names = flat([self._get_all_functions_names(t) for t in self._trees])
+        words = flat([split_words_by_underscore(name) for name in names])
         return words
 
-    def _get_words_from_variables_names(self):
-        pass
-
-    # todo Сделать один метод для получения всех слов из функции или из переменной
     def _get_all_functions_names(self, tree):
         """
         Возвращает список имен всех функций в дереве (файле), за исключением системных
@@ -89,14 +80,9 @@ class PythonParser(AbstractParser):
         all_funcs = [node.name.lower() for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
         return [f for f in all_funcs if not (f.startswith('__') and f.endswith('__'))]
 
-    def _get_words_from_function_name(self, function_name):
-        """
-        Возвращает список слов, входящих в название функции
-        :param function_name:   Название функции
-        :return:                Список слов, входящих в название функции
-        """
-        return [word for word in function_name.split('_')]
+    def _get_all_local_variables_names(self, tree):
+        func_bodies = [node.body for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
+        return flat([[a.targets[0].id for a in fb if isinstance(a, ast.Assign)] for fb in func_bodies])
 
-    def _flat(self, _list):
-        """ [(1,2), (3,4)] -> [1, 2, 3, 4]"""
-        return [i for i in itertools.chain.from_iterable(_list)]
+
+
