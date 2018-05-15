@@ -20,13 +20,16 @@ def main():
                             help='Место вывода отчета. stdout - консоль; file - файл')
         parser.add_argument('-f', '--format', nargs='?', default='json', type=str, choices=['json', 'csv'],
                             help='Формат вывода отчета. json - json-файл; csv - csv-файл')
+        parser.add_argument('-t', '--top', nargs='?', default='10', type=int,
+                            help='Количество частей речи, выводимых в статистике (топ)')
         args = parser.parse_args(sys.argv[1:])
 
         settings = dict(lang=args.lang,
                         code_element=args.code_element,
                         part_of_speech=args.pos,
                         output=args.output,
-                        format=args.format)
+                        format=args.format,
+                        top=args.top)
 
         collector = StatCollector(settings)
         stat = collector.collect_stat()

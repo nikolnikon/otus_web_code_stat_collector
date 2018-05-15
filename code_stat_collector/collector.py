@@ -12,7 +12,7 @@ class StatCollector:
 
     def collect_stat(self):
         words = self._parser.get_words(self._settings['code_element'])
-        stat = self._analyzer.get_words_count(words, self._settings['part_of_speech'])
+        stat = self._analyzer.get_words_count(words, self._settings['part_of_speech'], self._settings['top'])
         return stat
 
     def output_stat(self, stat):
