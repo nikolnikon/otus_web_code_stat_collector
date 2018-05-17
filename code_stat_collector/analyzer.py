@@ -1,5 +1,5 @@
 import collections
-from nltk import pos_tag
+from nltk import pos_tag, word_tokenize
 
 
 class Analyzer:
@@ -16,7 +16,7 @@ class Analyzer:
         return collections.Counter(filtered_words).most_common(top_size)
 
     def _get_verbs(self, words):
-        words_info = pos_tag(words)
+        words_info = pos_tag(word_tokenize(' '.join(words)))
         return [tag[0] for tag in words_info if 'VB' in tag[1]]
 
     def _get_nouns(self, words):

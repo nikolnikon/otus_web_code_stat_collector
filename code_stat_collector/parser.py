@@ -1,5 +1,7 @@
-import os
 import ast
+import tempfile
+import os
+import subprocess
 from abc import ABCMeta, abstractmethod
 from code_stat_collector.utils import flat, split_words_by_underscore, get_files_names
 
@@ -18,15 +20,26 @@ class AbstractParser(metaclass=ABCMeta):
 
     @abstractmethod
     def get_words(self, code_element):
-        raise NotImplementedError('Не определен метод AbstractParser.get_words')
+        raise NotImplementedError('Не определен метод get_words')
 
     @abstractmethod
     def _parse(self):
-        raise NotImplementedError('Не определен метод AbstractParser._parse')
+        raise NotImplementedError('Не определен метод _parse')
 
     def _fetch_source_code(self):
-        path = str()
-        return path
+        temp_path = tempfile.mkdtemp()
+        proc = subprocess.Popen(['git', 'clone', self._url, temp_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        try:
+            outs, errs = proc.communicate()
+        except (OSError, ValueError, subprocess.SubprocessError) as ex:
+            pass
+
+        res = proc.returncode
+        if res:
+            if res != 0:
+                pass
+        return temp_path
 
 
 class PythonParser(AbstractParser):
@@ -43,9 +56,9 @@ class PythonParser(AbstractParser):
             return
 
         path = self._fetch_source_code()
-        self._get_trees(path)
+        self._build_trees(path)
 
-    def _get_trees(self, path):
+    def _build_trees(self, path):
         """
         Находит файлы с расширением .py и строит из их содержимого деревья с помощью ast
         :param path:                Путь к дирктории, внутри которой искать файлы
@@ -68,7 +81,7 @@ class PythonParser(AbstractParser):
         if code_element == 'func':
             names = flat([self._get_all_functions_names(t) for t in self._trees])
         elif code_element == 'loc_var':
-            names = flat([self._get_all_functions_names(t) for t in self._trees])
+            names = flat([self._get_all_local_variables_names(t) for t in self._trees])
         words = flat([split_words_by_underscore(name) for name in names])
         return words
 
@@ -82,7 +95,7 @@ class PythonParser(AbstractParser):
 
     def _get_all_local_variables_names(self, tree):
         func_bodies = [node.body for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
-        return flat([[a.targets[0].id for a in fb if isinstance(a, ast.Assign)] for fb in func_bodies])
+        return flat([[a.targets[0].id for a in fb if isinstance(a, ast.Assign) and isinstance(a.targets[0], ast.Name)] for fb in func_bodies])
 
 
 

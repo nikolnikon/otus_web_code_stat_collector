@@ -16,7 +16,15 @@ class StatCollector:
         return stat
 
     def output_stat(self, stat):
-        self._serializer.serialize(stat)
+        output = self._serializer.serialize(stat, self._settings)
+        if self._settings['output'] == 'stdout':
+            print(output)
+        elif self._settings['output'] == 'file':
+            if not self._settings['file']:
+                # Кинуть исключение
+                pass
+            with open(self._settings['file'], 'w+') as f:
+                f.write(output)
 
     def _create_parser(self):
         if self._settings['lang'] == 'py':
