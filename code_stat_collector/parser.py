@@ -4,6 +4,7 @@ import os
 import subprocess
 from abc import ABCMeta, abstractmethod
 from code_stat_collector.utils import flat, split_words_by_underscore, get_files_names
+from exceptions import FetchRepoError
 
 
 class AbstractParser(metaclass=ABCMeta):
@@ -32,13 +33,13 @@ class AbstractParser(metaclass=ABCMeta):
 
         try:
             outs, errs = proc.communicate()
-        except (OSError, ValueError, subprocess.SubprocessError) as ex:
-            pass
+        except (OSError, ValueError, subprocess.SubprocessError) as e:
+            raise FetchRepoError(self._url, str(e)) from e
 
         res = proc.returncode
         if res:
             if res != 0:
-                pass
+                raise FetchRepoError(self._url, '{message}, код возврата: {code}'.format(message=errs, code=res))
         return temp_path
 
 

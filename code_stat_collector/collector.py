@@ -1,6 +1,7 @@
 from code_stat_collector.analyzer import Analyzer
 from code_stat_collector.parser import PythonParser
 from code_stat_collector.serializer import JSONSerializer, CSVSerializer
+from exceptions import OutputError
 
 
 class StatCollector:
@@ -21,8 +22,7 @@ class StatCollector:
             print(output)
         elif self._settings['output'] == 'file':
             if not self._settings['file']:
-                # Кинуть исключение
-                pass
+                raise OutputError('Путь к выходному файлу не задан')
             with open(self._settings['file'], 'w+') as f:
                 f.write(output)
 
@@ -35,7 +35,3 @@ class StatCollector:
             return JSONSerializer()
         elif self._settings['format'] == 'csv':
             return CSVSerializer()
-        else:
-            # Кинуть ошибку
-            # Спросить у Ильи, в скольких местах надо делать проверку входных данных
-            pass

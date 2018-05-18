@@ -3,9 +3,9 @@
 import sys
 from argparse import ArgumentParser
 from code_stat_collector.collector import StatCollector
+from exceptions import FetchRepoError, OutputError
 
 # todo Подумать над типами параметров. Возможно, запилить для них Enumeration
-# todo разобраться с параметром nargs
 # todo Спросить у Ильи насчет использования Enumeration вместо строк для обозначения частей речи, вывода и подобного
 
 
@@ -43,6 +43,10 @@ def main():
         collector = StatCollector(settings)
         stat = collector.collect_stat()
         collector.output_stat(stat)
+
+    except (FetchRepoError, OutputError) as e:
+        print(e)
+        return_code = 2
 
     except Exception as e:
         print('Неопределенная ошибка в приложении: {exception}'.format(exception=e))

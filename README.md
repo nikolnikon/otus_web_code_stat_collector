@@ -13,6 +13,7 @@ $ sudo python setup.py install
 $ python
 >>> import nltk
 >>> nltk.download('punkt')
+>>> nltk.download('averaged_perceptron_tagger')
 ```
 
 С использованием git и установкой зависимостей из requirements.txt (для разработки):
@@ -23,6 +24,7 @@ $ pip install -r requirements.txt
 $ python
 >>> import nltk
 >>> nltk.download('punkt')
+>>> nltk.download('averaged_perceptron_tagger')
 ```
 
 ## Пример использования
