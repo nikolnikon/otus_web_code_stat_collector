@@ -12,15 +12,14 @@ from code_stat_collector.collector import StatCollector
 def main():
     try:
         return_code = 0
-        parser = ArgumentParser('Подсчет самых популярных существительных в заголовках статей с сайта habr.com')
+        parser = ArgumentParser(prog='csc', description='Подсчет статистики в исходном коде приложений.')
+        parser.add_argument('url', type=str, help='Ссылка на репозиторий с исходным кодом'),
         parser.add_argument('-l', '--lang', nargs='?', default='py', type=str,
                             help='Язык программирования'),
-        parser.add_argument('-u', '--url', nargs='?', type=str,
-                            help='Ссылка на репозиторий с исходным кодом'),
         parser.add_argument('-p', '--pos', nargs='?', default='verb', type=str, choices=['noun', 'verb'],
                             help='Анализируемые части речи. noun - существительные; verb - глаголы')
-        parser.add_argument('-с', '--code_element', nargs='?', default='method', type=str, choices=['loc_var', 'func'],
-                            help='Анализируемые части кода. var - локальных переменных внутри функций;'
+        parser.add_argument('-с', '--code_element', nargs='?', default='func', type=str, choices=['loc_var', 'func'],
+                            help='Анализируемые части кода. var - локальные переменные внутри функций;'
                                  'func - названия функций')
         parser.add_argument('-o', '--output', nargs='?', default='stdout', type=str, choices=['stdout', 'file'],
                             help='Место вывода отчета. stdout - консоль; file - файл')
@@ -28,7 +27,7 @@ def main():
                             help='Формат вывода отчета. json - json-файл; csv - csv-файл')
         parser.add_argument('-t', '--top', nargs='?', default='10', type=int,
                             help='Количество частей речи, выводимых в статистике (топ)')
-        parser.add_argument('-of', '--file', nargs='?', type=str,
+        parser.add_argument('-n', '--file', nargs='?', type=str,
                             help='Путь к файлу, если требуется выводить статистику в файл')
         args = parser.parse_args(sys.argv[1:])
 
